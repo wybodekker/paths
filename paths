@@ -1,0 +1,136 @@
+#!/bin/bash
+
+Version=2.03
+Myname="${0##*/}"
+
+:<<'DOC'
+= paths - list the current PATH, MANPATH and INFOPATH, marking doubles
+
+= Synopsis
+paths [-c]	
+
+== Options
+-h,--help	print this help and exit
+-H,--Help	print full documentation via less and exit
+-V,--version	print version and exit
+-c,--color	Colorize duplicates
+
+= Description
+paths displays the contents of |$PATH|, |$MANPATH| and |$INFOPATH|, listing each directory
+on a separate line and marking duplicates.
+
+For example:
+   $ paths
+   PATH:
+     /home/wybo/bin
+     /local/bin
+     /usr/local/texlive/2011/bin/i386-linux/
+     /usr/local/sbin
+     /usr/local/bin
+     /usr/sbin
+     /usr/bin
+     /sbin
+     /bin
+     /usr/games
+   MANPATH:
+     ./man
+     /local/man
+     /usr/local/texlive/2011/texmf/doc/man
+   INFOPATH:
+     /usr/local/texlive/2011/texmf/doc/info
+
+Directories that occur more than once in the path will be marked with asterisks, for example:
+   $ PATH=/local/bin:$PATH paths
+   PATH:
+   **/local/bin
+     /home/wybo/bin
+   **/local/bin
+     /usr/local/texlive/2011/bin/i386-linux/
+     /usr/local/sbin
+     ...
+
+With the |Red{-c}| option, ANSI coloring wil be used to mark doubles, instead of asterisks:
+   $ PATH=/local/bin:$PATH paths
+   PATH:
+     Red{/local/bin}
+     /home/wybo/bin
+     Red{/local/bin}
+     /usr/local/texlive/2011/bin/i386-linux/
+     /usr/local/sbin
+     ...
+
+= Author
+[Wybo Dekker](wybo@dekkerdocumenten.nl)
+
+= Copyright
+Released under the [GNU General Public License](www.gnu.org/copyleft/gpl.html)
+DOC
+
+
+:<<'DOC' #----------------------------------------------------------------------
+= handle_options
+synopsis:	 handle_options "$@"
+description:	handle the options.
+globals used:	 Myname Version
+globals  set:	 args
+DOC
+#-------------------------------------------------------------------------------
+handle_options() {
+   local options
+   options=$(getopt \
+      -n "$Myname" \
+      -o hHIVc \
+      -l help,Help,version,color -- "$@"
+   ) || exit 1
+   eval set -- "$options"
+   color=false
+   while [ $# -gt 0 ]; do
+      case $1 in
+      (-h|--help)    helpsrt
+		     ;;
+      (-H|--Help)    helpall
+		     ;;
+      (-V|--version) echo $Version
+		     exit
+		     ;;
+      (-I)	     instscript "$0" ||
+			die 'the -I option is for developers only'
+		     exit
+		     ;;
+      (-c|--color)   color=true
+		     shift
+		     ;;
+      (--)	     shift
+		     break
+		     ;;
+      (*)	     break
+		     ;;
+      esac
+   done
+   args=( "$@" )
+}
+
+handle_options "$@"
+set -- "${args[@]}"
+
+for e in PATH MANPATH INFOPATH; do
+   declare -A n
+   echo $e:
+   eval "e=\$$e"
+   e=${e//::/:} # :: → :
+   IFS=: entries=("$e")
+   for p in ${entries[*]}; do 
+      (( n[$p]++ ))
+   done
+   for p in ${entries[*]}; do
+      if [[ ${n[$p]} -gt 1 ]]; then
+         if $color; then
+            echo "   [31;1m$p[0m"
+         else
+            echo '**' "$p"
+         fi
+      else
+         echo '  ' "$p"
+      fi
+   done
+done
