@@ -23,7 +23,6 @@ For example:
    $ paths
    PATH:
      /home/wybo/bin
-     /local/bin
      /usr/local/texlive/2011/bin/i386-linux/
      /usr/local/sbin
      /usr/local/bin
@@ -34,7 +33,7 @@ For example:
      /usr/games
    MANPATH:
      ./man
-     /local/man
+     /usr/local/man
      /usr/local/texlive/2011/texmf/doc/man
    INFOPATH:
      /usr/local/texlive/2011/texmf/doc/info
@@ -60,7 +59,7 @@ With the |Red{-c}| option, ANSI coloring wil be used to mark doubles, instead of
      ...
 
 = Author
-[Wybo Dekker](wybo@dekkerdocumenten.nl)
+[Wybo Dekker](wybodekker@me.com)
 
 = Copyright
 Released under the [GNU General Public License](www.gnu.org/copyleft/gpl.html)
